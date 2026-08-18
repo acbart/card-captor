@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local secrets and configuration
+.env
+.env.*
+!.env.example
+
+# Application data (photos, card crops, exports, logs, database)
+data/
+exports/
+logs/
+*.db
+*.sqlite
+*.sqlite3
+
+# Scratch / experiment space
+.scratch/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+__pycache__/
+*.pyc

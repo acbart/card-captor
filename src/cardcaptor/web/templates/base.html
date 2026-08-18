@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}card-captor{% endblock %}</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; background: #f7f7f9; color: #1c1c1e; }
+    header { background: #1f3a5f; color: #fff; padding: 0.9rem 1.5rem; display: flex; gap: 1.5rem; align-items: baseline; }
+    header a { color: #fff; text-decoration: none; }
+    header h1 { font-size: 1.15rem; margin: 0; }
+    nav a { margin-right: 1rem; font-size: 0.9rem; }
+    main { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+    .card { background: #fff; border: 1px solid #dcdce1; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+    th, td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid #e6e6ea; vertical-align: top; }
+    th { background: #f0f0f4; }
+    .flag { display: inline-block; background: #ffe8cc; color: #8a4b00; border-radius: 10px; padding: 0.05rem 0.5rem; font-size: 0.75rem; margin-right: 0.25rem; }
+    .ok { color: #15803d; font-weight: 600; }
+    .warn { color: #b45309; font-weight: 600; }
+    .muted { color: #6b7280; font-size: 0.85rem; }
+    form.inline { display: inline; }
+    input[type=text], input[type=number], input[type=date], select, textarea {
+      padding: 0.35rem 0.45rem; border: 1px solid #c9c9d1; border-radius: 5px; font-size: 0.92rem; width: 100%; box-sizing: border-box;
+    }
+    label { display: block; font-size: 0.82rem; margin: 0.5rem 0 0.15rem; color: #444; }
+    button, .button { background: #1f3a5f; color: #fff; border: 0; border-radius: 5px; padding: 0.45rem 0.9rem; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: inline-block; }
+    button.secondary { background: #6b7280; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+    .message { background: #e0f2fe; border: 1px solid #7dd3fc; padding: 0.6rem 0.9rem; border-radius: 6px; margin-bottom: 1rem; }
+    img.card-crop { max-width: 100%; border: 1px solid #dcdce1; border-radius: 6px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1><a href="/">card-captor</a></h1>
+  <nav>
+    <a href="/">Dashboard</a>
+    {% if activity is defined and activity %}
+      <a href="/activities/{{ activity.id }}">Activity</a>
+      <a href="/activities/{{ activity.id }}/import">Import</a>
+      <a href="/activities/{{ activity.id }}/cards">Cards</a>
+      <a href="/activities/{{ activity.id }}/review">Review</a>
+      <a href="/activities/{{ activity.id }}/finalize">Finalize</a>
+    {% endif %}
+  </nav>
+</header>
+<main>
+  {% if message %}<div class="message">{{ message }}</div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

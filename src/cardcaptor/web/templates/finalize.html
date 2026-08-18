@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Finalize - {{ activity.name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Finalize {{ activity.name }}</h2>
+  <table>
+    <tr><th>Submissions</th><td>{{ summary.submissions }}</td></tr>
+    <tr><th>Still needing review</th>
+      <td>{% if outstanding %}<span class="warn">{{ outstanding | length }}</span>{% else %}<span class="ok">0</span>{% endif %}</td></tr>
+    <tr><th>Unmatched students</th><td>{{ summary.unmatched }}</td></tr>
+    <tr><th>Mean score</th><td>{{ summary.mean_score }}</td></tr>
+    <tr><th>Finalized</th><td>{{ summary.finalized_at or "not yet" }}</td></tr>
+    <tr><th>Canvas upload</th><td>{{ summary.canvas_uploaded_at or "never" }}</td></tr>
+  </table>
+  {% if outstanding %}
+  <p class="warn">Review the remaining {{ outstanding | length }} submission(s) before finalizing.</p>
+  <ul>
+    {% for submission in outstanding[:20] %}
+    <li><a href="/activities/{{ activity.id }}/submissions/{{ submission.id }}">Submission #{{ submission.id }}</a></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <form class="inline" method="post" action="/activities/{{ activity.id }}/finalize">
+    <button type="submit">Mark activity finalized</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Export</h3>
+  <form method="post" action="/activities/{{ activity.id }}/export">
+    <label>Export sub-folder (blank uses the configured exports folder)</label>
+    <input type="text" name="subfolder" placeholder="optional sub-folder name">
+    <p><button type="submit">Write both CSV files</button></p>
+  </form>
+  <p>
+    <a class="button secondary" href="/activities/{{ activity.id }}/export/canvas.csv">Download Canvas CSV</a>
+    <a class="button secondary" href="/activities/{{ activity.id }}/export/audit.csv">Download audit CSV</a>
+    <a class="button secondary" href="/activities/{{ activity.id }}/export/flagged.csv">Download flagged CSV</a>
+  </p>
+</div>
+
+<div class="card">
+  <h3>Canvas upload</h3>
+  {% if canvas_configured %}
+  <p class="muted">Assignment {{ activity.canvas_assignment_id }} ({{ activity.canvas_assignment_mode or "direct" }} mode)</p>
+  <form class="inline" method="post" action="/activities/{{ activity.id }}/canvas-upload">
+    <input type="hidden" name="dry_run" value="true">
+    <button type="submit">Dry run</button>
+  </form>
+  <form class="inline" method="post" action="/activities/{{ activity.id }}/canvas-upload">
+    <input type="hidden" name="dry_run" value="false">
+    <button type="submit">Upload for real</button>
+  </form>
+  {% else %}
+  <p class="muted">No Canvas assignment id configured for this activity - export the CSV instead.</p>
+  {% endif %}
+</div>
+{% endblock %}

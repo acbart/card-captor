@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Import - {{ activity.name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Import photos for {{ activity.name }}</h2>
+  <form method="post" action="/activities/{{ activity.id }}/import" enctype="multipart/form-data">
+    <label>Upload photos or a ZIP archive</label>
+    <input type="file" name="files" multiple accept="image/*,.zip">
+    <label>Or import from a local folder</label>
+    <input type="text" name="folder" placeholder="/home/instructor/photos">
+    <label>Or import from a URL (image or ZIP)</label>
+    <input type="text" name="url" placeholder="https://example.edu/photos.zip">
+    <p><button type="submit">Import</button></p>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Roster</h3>
+  <form method="post" action="/activities/{{ activity.id }}/roster" enctype="multipart/form-data">
+    <label>Roster CSV (name, email, canvas_user_id, sis_id)</label>
+    <input type="file" name="roster_file" accept=".csv" required>
+    <p><button type="submit">Import roster</button></p>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Imported photos ({{ images | length }})</h3>
+  <table>
+    <tr><th>#</th><th>Filename</th><th>Imported</th><th>SHA-256</th></tr>
+    {% for image in images %}
+    <tr>
+      <td>{{ image.id }}</td>
+      <td>{{ image.original_filename }}</td>
+      <td class="muted">{{ image.imported_at }}</td>
+      <td class="muted">{{ image.sha256[:16] }}...</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">Nothing imported yet</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

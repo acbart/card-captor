@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - card-captor{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Activities</h2>
+  {% if summaries %}
+  <table>
+    <tr>
+      <th>#</th><th>Name</th><th>Date</th><th>Cards</th><th>Needs review</th>
+      <th>Unmatched</th><th>Mean score</th><th>Status</th>
+    </tr>
+    {% for summary in summaries %}
+    <tr>
+      <td>{{ summary.activity_id }}</td>
+      <td><a href="/activities/{{ summary.activity_id }}">{{ summary.activity_name }}</a></td>
+      <td>{{ summary.date or "-" }}</td>
+      <td>{{ summary.cards_detected }}</td>
+      <td>{% if summary.needs_review %}<span class="warn">{{ summary.needs_review }}</span>{% else %}<span class="ok">0</span>{% endif %}</td>
+      <td>{{ summary.unmatched }}</td>
+      <td>{{ summary.mean_score }}</td>
+      <td>
+        {% if summary.canvas_uploaded_at %}uploaded
+        {% elif summary.finalized_at %}finalized
+        {% else %}in progress{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No activities yet. Create a course and an activity below.</p>
+  {% endif %}
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>New course</h3>
+    <form method="post" action="/courses">
+      <label>Name</label><input type="text" name="name" required>
+      <label>Term</label><input type="text" name="term" placeholder="Fall 2026">
+      <label>Canvas course id (optional)</label><input type="text" name="canvas_course_id">
+      <label>Email domain (optional)</label><input type="text" name="email_domain" placeholder="university.edu">
+      <p><button type="submit">Create course</button></p>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>New activity</h3>
+    <form method="post" action="/activities">
+      <label>Course</label>
+      <select name="course_id" required>
+        {% for course in courses %}
+        <option value="{{ course.id }}">{{ course.name }} {{ course.term }}</option>
+        {% endfor %}
+      </select>
+      <label>Name</label><input type="text" name="name" required>
+      <label>Date</label><input type="date" name="date">
+      <label>Point value</label><input type="number" step="0.5" name="point_value" value="1">
+      <label>Accepted answers (comma separated)</label><input type="text" name="answers" placeholder="B">
+      <label>Grading rule</label>
+      <select name="rule_type">
+        <option value="mcq">mcq</option>
+        <option value="case_insensitive" selected>case_insensitive</option>
+        <option value="exact">exact</option>
+        <option value="multi_accept">multi_accept</option>
+        <option value="numeric">numeric</option>
+      </select>
+      <label>Canvas assignment id (optional)</label><input type="text" name="canvas_assignment_id">
+      <p><button type="submit">Create activity</button></p>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Courses</h3>
+    <ul>
+      {% for course in courses %}
+      <li>{{ course.id }} - {{ course.name }} ({{ course.term }})</li>
+      {% else %}
+      <li class="muted">No courses yet</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Recent activity log</h3>
+  <table>
+    <tr><th>When</th><th>Entity</th><th>Action</th><th>Actor</th></tr>
+    {% for entry in recent_log %}
+    <tr>
+      <td class="muted">{{ entry.timestamp }}</td>
+      <td>{{ entry.entity_type }} #{{ entry.entity_id }}</td>
+      <td>{{ entry.action }}</td>
+      <td>{{ entry.actor }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">Nothing logged yet</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Card {{ submission.id }} - {{ activity.name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Submission #{{ submission.id }}</h2>
+  <p>
+    {% for flag in flags %}<span class="flag">{{ flag }}</span>{% else %}<span class="ok">No review flags</span>{% endfor %}
+  </p>
+  <div class="grid">
+    <div>
+      {% if submission.card %}
+      <img class="card-crop" src="{{ submission.card.crop_media_url }}" alt="card image">
+      <p class="muted">
+        card {{ submission.card.card_uuid }}<br>
+        color: {{ submission.card.color_category or "unknown" }}
+        ({{ "%.2f"|format(submission.card.color_confidence or 0) }})<br>
+        Lab: {{ "%.1f"|format(submission.card.color_lab_l or 0) }},
+        {{ "%.1f"|format(submission.card.color_lab_a or 0) }},
+        {{ "%.1f"|format(submission.card.color_lab_b or 0) }}
+      </p>
+      {% endif %}
+    </div>
+    <div>
+      <h3>Raw OCR (never overwritten)</h3>
+      <table>
+        <tr><th>Field</th><th>Text</th><th>Confidence</th></tr>
+        <tr><td>name</td><td>{{ submission.raw_name or "-" }}</td><td>{{ "%.2f"|format(submission.name_confidence or 0) }}</td></tr>
+        <tr><td>email</td><td>{{ submission.raw_email or "-" }}</td><td>{{ "%.2f"|format(submission.email_confidence or 0) }}</td></tr>
+        <tr><td>answer</td><td>{{ submission.raw_answer or "-" }}</td><td>{{ "%.2f"|format(submission.answer_confidence or 0) }}</td></tr>
+      </table>
+      <p class="muted">
+        Match: {{ submission.match_method or "none" }}
+        ({{ "%.2f"|format(submission.match_confidence or 0) }})<br>
+        Auto score: {{ "%.2f"|format(submission.auto_score or 0) }} / {{ activity.point_value }}
+        via {{ submission.auto_grade_rule or "-" }}
+      </p>
+      <h4>Alternate candidates</h4>
+      <ul class="muted">
+        {% for text, confidence in name_candidates %}<li>name: {{ text }} ({{ "%.2f"|format(confidence) }})</li>{% endfor %}
+        {% for text, confidence in email_candidates %}<li>email: {{ text }} ({{ "%.2f"|format(confidence) }})</li>{% endfor %}
+        {% for text, confidence in answer_candidates %}<li>answer: {{ text }} ({{ "%.2f"|format(confidence) }})</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Instructor corrections</h3>
+  <form method="post" action="/activities/{{ activity.id }}/submissions/{{ submission.id }}">
+    <label>Name</label>
+    <input type="text" name="name" value="{{ submission.instructor_name or submission.raw_name or '' }}">
+    <label>Email</label>
+    <input type="text" name="email" value="{{ submission.instructor_email or submission.raw_email or '' }}">
+    <label>Answer</label>
+    <input type="text" name="answer" value="{{ submission.instructor_answer or submission.raw_answer or '' }}">
+    <label>Student</label>
+    <select name="student_id">
+      <option value="">-- unmatched --</option>
+      {% for student in students %}
+      <option value="{{ student.id }}" {% if submission.effective_student_id == student.id %}selected{% endif %}>
+        {{ student.name }} &lt;{{ student.email }}&gt;
+      </option>
+      {% endfor %}
+    </select>
+    <label>Score override (blank removes any override and uses the auto score)</label>
+    <input type="number" step="0.25" name="score" value="{{ submission.instructor_score if submission.instructor_score is not none else '' }}">
+    <label><input type="checkbox" name="mark_reviewed" value="true" checked> Mark as reviewed</label>
+    <p>
+      <button type="submit">Save corrections</button>
+      <a class="button secondary" href="/activities/{{ activity.id }}/review">Back to queue</a>
+    </p>
+  </form>
+</div>
+
+<div class="card">
+  <h3>History</h3>
+  <table>
+    <tr><th>When</th><th>Action</th><th>Actor</th><th>Data</th></tr>
+    {% for entry in log %}
+    <tr><td class="muted">{{ entry.timestamp }}</td><td>{{ entry.action }}</td><td>{{ entry.actor }}</td><td class="muted">{{ entry.data }}</td></tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">No entries</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

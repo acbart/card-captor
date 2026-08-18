@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ activity.name }} - card-captor{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>{{ activity.name }}</h2>
+  <p class="muted">
+    Activity #{{ activity.id }} &middot; {{ activity.date or "no date" }} &middot;
+    {{ activity.point_value }} point(s) &middot; rule: {{ rules.rule_type }} &middot;
+    accepted: {{ rules.accepted_answers | join(", ") or "none" }}
+  </p>
+  <table>
+    {% for key, value in summary.items() %}
+    <tr><th>{{ key.replace("_", " ") }}</th><td>{{ value if value is not none else "-" }}</td></tr>
+    {% endfor %}
+  </table>
+  <p>
+    <form class="inline" method="post" action="/activities/{{ activity.id }}/process">
+      <button type="submit">Run processing pipeline</button>
+    </form>
+    <a class="button secondary" href="/activities/{{ activity.id }}/import">Import photos</a>
+    <a class="button secondary" href="/activities/{{ activity.id }}/review">Review queue</a>
+    <a class="button secondary" href="/activities/{{ activity.id }}/finalize">Finalize</a>
+  </p>
+</div>
+
+<div class="card">
+  <h3>Card colors</h3>
+  <ul>
+    {% for category, count in colors.items() %}
+    <li><a href="/activities/{{ activity.id }}/review?filter=color&color={{ category }}">{{ category }}</a>: {{ count }}</li>
+    {% else %}
+    <li class="muted">No cards processed yet</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Submissions</h3>
+  <table>
+    <tr><th>#</th><th>Name</th><th>Email</th><th>Answer</th><th>Score</th><th>Match</th><th>Review</th></tr>
+    {% for submission in submissions %}
+    <tr>
+      <td><a href="/activities/{{ activity.id }}/submissions/{{ submission.id }}">{{ submission.id }}</a></td>
+      <td>{{ submission.effective_name or "-" }}</td>
+      <td>{{ submission.effective_email or "-" }}</td>
+      <td>{{ submission.effective_answer or "-" }}</td>
+      <td>{{ "%.2f"|format(submission.effective_score) }}</td>
+      <td>{{ submission.match_method or "none" }}</td>
+      <td>{% if submission.needs_review %}<span class="warn">needs review</span>{% else %}<span class="ok">ok</span>{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="muted">No submissions yet - import photos and run processing.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h3>Audit log</h3>
+  <table>
+    <tr><th>When</th><th>Action</th><th>Actor</th><th>Data</th></tr>
+    {% for entry in log %}
+    <tr><td class="muted">{{ entry.timestamp }}</td><td>{{ entry.action }}</td><td>{{ entry.actor }}</td><td class="muted">{{ entry.data }}</td></tr>
+    {% else %}
+    <tr><td colspan="4" class="muted">No entries</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

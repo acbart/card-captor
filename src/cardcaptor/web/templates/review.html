@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Review - {{ activity.name }}{% endblock %}
+{% block content %}
+{% if mode == "cards" %}
+<div class="card">
+  <h2>Detected cards</h2>
+  {% for image in images %}
+  <h3>{{ image.original_filename }} ({{ cards_by_image[image.id] | length }} card(s))</h3>
+  <div class="grid">
+    {% for card in cards_by_image[image.id] %}
+    <div>
+      <img class="card-crop" src="{{ card.crop_media_url }}" alt="card {{ card.card_uuid[:8] }}">
+      <p class="muted">
+        {{ card.card_uuid[:8] }} &middot; {{ card.color_category or "unknown" }}
+        ({{ "%.2f"|format(card.color_confidence or 0) }})
+      </p>
+    </div>
+    {% else %}
+    <p class="muted">No cards detected in this photo.</p>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No photos imported yet.</p>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <h2>Review queue - {{ activity.name }}</h2>
+  <p>
+    {% for option in ["needs_review", "all", "unmatched", "low_confidence", "duplicate", "correct", "incorrect", "missing", "color"] %}
+    <a class="button {% if option != filter %}secondary{% endif %}" href="/activities/{{ activity.id }}/review?filter={{ option }}">{{ option }}</a>
+    {% endfor %}
+  </p>
+  <table>
+    <tr><th>#</th><th>Card</th><th>Name</th><th>Email</th><th>Answer</th><th>Score</th><th>Flags</th><th></th></tr>
+    {% for submission in submissions %}
+    <tr>
+      <td>{{ submission.id }}</td>
+      <td>{% if submission.card %}<span class="muted">{{ submission.card.card_uuid[:8] }}</span>{% endif %}</td>
+      <td>{{ submission.effective_name or "-" }}</td>
+      <td>{{ submission.effective_email or "-" }}</td>
+      <td>{{ submission.effective_answer or "-" }}</td>
+      <td>{{ "%.2f"|format(submission.effective_score) }}</td>
+      <td>
+        {% for flag in flags_from_json(submission.review_flags) %}
+        <span class="flag">{{ flag }}</span>
+        {% endfor %}
+      </td>
+      <td><a class="button" href="/activities/{{ activity.id }}/submissions/{{ submission.id }}">Open</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="muted">Nothing matches this filter.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}
